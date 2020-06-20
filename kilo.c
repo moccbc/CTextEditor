@@ -2,7 +2,8 @@
 #include <ctype.h> // iscntrl()
 #include <errno.h> // errno, EAGAIN
 #include <stdio.h> // printf() perror()
-#include <stdlib.h> // atexit()
+#include <stdlib.h> // atexit() realloc() free()
+#include <string.h> // memcpy()
 #include <sys/ioctl.h> // ioctl() TIOCGWINSZ struct winsize
 #include <termios.h> // struct termios, tcgetattr(), tcsetattr(), ECHO, TCSAFLUSH, OPOST, IXON, ICANON, ISIG, IEXTEN
 // VMIN, VTIME
@@ -123,6 +124,32 @@ int getWindowSize(int *rows, int *cols) {
     }
 }
 
+/*---------- Append Buffer ----------*/
+// The append buffer gets rid of the need to call a bunch of small write()s.
+// This is important because this allows the program to update the whole screen at once.
+// Otherwise, there could be several small unpredicatable pauses between write()s, causing
+// an annoying flicker effect.
+struct abuf {
+    char* b;
+    int len;
+};
+
+#define ABUF_INIT {NULL, 0}
+
+void abAppend(struct abuf *ab, const char *s, int len) {
+    // Creating a block of memory that is the size of the current string
+    // plus the size of the string that we are appending.
+    char *new = realloc(ab->b, ab->len + len);
+
+    if (new == NULL) return;
+    memcpy(&new[ab->len], s, len);
+    ab->b = new;
+    ab->len += len;
+}
+
+void abFree(struct abuf *ab) {
+    free(ab->b);
+}
 
 /*---------- Input Functions ----------*/
 // This function waits for a keypress and then handles it.
@@ -140,24 +167,38 @@ void editorProcessKeypress() {
 
 /*---------- Output Functions -----------*/
 // This is the function to draw "~" like defualt vim does.
-void editorDrawRows() {
+void editorDrawRows(struct abuf *ab) {
     int y;
     for (y = 0; y < E.screenrows; y++) {
-        write(STDOUT_FILENO, "~\r\n",3);
+        abAppend(ab, "~", 1);
+
+        abAppend(ab, "\x1b[K", 3);
+        if (y < E.screenrows - 1) {
+            abAppend(ab, "\r\n", 2);
+        }
     }
 }
 
 void editorRefreshScreen() {
+    struct abuf ab = ABUF_INIT;
+
+    abAppend(&ab, "\x1b[?25l", 6);
     // The 4 means we are writing 4 bytes to the terminal.
     // "\x1b" is equal to 27 and it is the escape character.
     // We are using VT100 escape sequences, and J is the erase
     // in display. 2 tells it to clear the entire screen.
-    write(STDOUT_FILENO, "\x1b[2J", 4);
+    //abAppend(&ab, "\x1b[2J", 4);
     // H is the Cursor position command
     // This repositions the cursor back to the top-left corner.
-    write(STDOUT_FILENO, "\x1b[H", 3);
-    editorDrawRows();
-    write(STDOUT_FILENO, "\x1b[H", 3);
+    abAppend(&ab, "\x1b[H", 3);
+
+    editorDrawRows(&ab);
+    abAppend(&ab, "\x1b[H", 3);
+    abAppend(&ab, "\x1b[?25l", 6);
+
+    write(STDOUT_FILENO, ab.b, ab.len);
+    // Freeing the memory used by abuf
+    abFree(&ab);
 }
 
 /*---------- Init Functions -----------*/
