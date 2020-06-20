@@ -5,7 +5,7 @@
 #include <stdlib.h> // atexit()
 #include <termios.h> // struct termios, tcgetattr(), tcsetattr(), ECHO, TCSAFLUSH, OPOST, IXON, ICANON, ISIG, IEXTEN
 // VMIN, VTIME
-#include <unistd.h> // read() and STDIN_FILENO
+#include <unistd.h> // read() STDIN_FILENO write() STDOUT_FILENO
 
 /*----------- Defines ----------*/
 #define CTRL_KEY(k) ((k) & 0x1F)
@@ -15,6 +15,8 @@ struct termios orig_termios;
 
 /*---------- Terminal Functions -----------*/
 void die(const char *s) {
+    write(STDOUT_FILENO, "\x1b[2J", 4);
+    write(STDOUT_FILENO, "\x1b[H", 3);
     perror(s);
     exit(1);
 }
@@ -82,15 +84,29 @@ void editorProcessKeypress() {
 
     switch (c) {
         case CTRL_KEY('q'):
+            write(STDOUT_FILENO, "\x1b[2J", 4);
+            write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
             break;
     }
 }
 
 /*---------- Header Files -----------*/
+void editorRefreshScreen() {
+    // The 4 means we are writing 4 bytes to the terminal.
+    // "\x1b" is equal to 27 and it is the escape character.
+    // We are using VT100 escape sequences, and J is the erase
+    // in display. 2 tells it to clear the entire screen.
+    write(STDOUT_FILENO, "\x1b[2J", 4);
+    // H is the Cursor position command
+    write(STDOUT_FILENO, "\x1b[H", 3);
+}
+
+/*---------- Main Function -----------*/
 int main() {
     enableRawMode();
     while(1) {
+        editorRefreshScreen();
         editorProcessKeypress();
     }
     return 0;
