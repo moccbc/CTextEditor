@@ -1,7 +1,7 @@
 #include <ctype.h> // iscntrl()
 #include <stdio.h> // printf()
 #include <stdlib.h> // atexit()
-#include <termios.h> // struct termios, tcgetattr(), tcsetattr(), ECHO, TCSAFLUSH
+#include <termios.h> // struct termios, tcgetattr(), tcsetattr(), ECHO, TCSAFLUSH, OPOST, IXON, ICANON, ISIG, IEXTEN
 #include <unistd.h> // read() and STDIN_FILENO
 
 struct termios orig_termios;
@@ -19,6 +19,9 @@ void enableRawMode() {
     // These are inputs for software flow control.
     // Adding ICNRL fixes ctrl-m to be correctly read in bytes.
     raw.c_iflag &= ~(ICRNL | IXON);
+    // This turns off output proessing. This is when each newline "\n"
+    // is translated into "\r\n".
+    raw.c_oflag &= ~(OPOST);
     // Adding "| ICANON" makes the program read byte by byte instead of line by line.
     // This disables the canonical mode ie get input by pressing enter mode.
     // Adding ISIG local flag disables ctrl-c and ctrl-z
@@ -42,10 +45,10 @@ int main() {
         // ASCII codes 0 - 31, 127 are control characters, whereas
         // ASCII codes 32 - 126 are all printable.
         if (iscntrl(c)) {
-            printf("%d\n",c);
+            printf("%d\r\n",c);
         }
         else {
-            printf("%d ('%c')\n", c, c);
+            printf("%d ('%c')\r\n", c, c);
         }
     }
     return 0;
