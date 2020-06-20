@@ -91,7 +91,15 @@ void editorProcessKeypress() {
     }
 }
 
-/*---------- Header Files -----------*/
+/*---------- Output Functions -----------*/
+// This is the function to draw "~" like defualt vim does.
+void editorDrawRows() {
+    int y;
+    for (y = 0; y < 24; y++) {
+        write(STDOUT_FILENO, "~\r\n",3);
+    }
+}
+
 void editorRefreshScreen() {
     // The 4 means we are writing 4 bytes to the terminal.
     // "\x1b" is equal to 27 and it is the escape character.
@@ -99,6 +107,9 @@ void editorRefreshScreen() {
     // in display. 2 tells it to clear the entire screen.
     write(STDOUT_FILENO, "\x1b[2J", 4);
     // H is the Cursor position command
+    // This repositions the cursor back to the top-left corner.
+    write(STDOUT_FILENO, "\x1b[H", 3);
+    editorDrawRows();
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
