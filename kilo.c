@@ -11,10 +11,12 @@
 
 /*----------- Defines ----------*/
 #define CTRL_KEY(k) ((k) & 0x1F)
+#define KILO_VERSION "0.0.1"
 
 /*---------- Data -----------*/
 // This struct contains the editor state
 struct editorConfig {
+    int cx, cy;
     int screenrows;
     int screencols;
     struct termios orig_termios;
@@ -170,7 +172,23 @@ void editorProcessKeypress() {
 void editorDrawRows(struct abuf *ab) {
     int y;
     for (y = 0; y < E.screenrows; y++) {
-        abAppend(ab, "~", 1);
+        if (y == E.screenrows / 3) {
+            // Displaying welcome message
+            char welcome[80];
+            int welcomelen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
+            if (welcomelen > E.screencols) welcomelen = E.screencols;
+            // Centering the welcome message
+            int padding = (E.screencols - welcomelen) / 2;
+            if (padding) {
+                abAppend(ab, "~", 1);
+                padding--;
+            }
+            while (padding--) abAppend(ab, " ", 1);
+            abAppend(ab, welcome, welcomelen);
+        }
+        else {
+            abAppend(ab, "~", 1);
+        }
 
         abAppend(ab, "\x1b[K", 3);
         if (y < E.screenrows - 1) {
@@ -203,6 +221,9 @@ void editorRefreshScreen() {
 
 /*---------- Init Functions -----------*/
 void initEditor() {
+    E.cx = 0;
+    E.cy = 0;
+
     if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
 }
 
