@@ -1,3 +1,4 @@
+/*---------- Header Files -----------*/
 #include <ctype.h> // iscntrl()
 #include <errno.h> // errno, EAGAIN
 #include <stdio.h> // printf() perror()
@@ -6,8 +7,13 @@
 // VMIN, VTIME
 #include <unistd.h> // read() and STDIN_FILENO
 
+/*----------- Defines ----------*/
+#define CTRL_KEY(k) ((k) & 0x1F)
+
+/*---------- Data -----------*/
 struct termios orig_termios;
 
+/*---------- Terminal Functions -----------*/
 void die(const char *s) {
     perror(s);
     exit(1);
@@ -55,30 +61,37 @@ void enableRawMode() {
     }
 }
 
-int main() {
-    enableRawMode();
-//    char c;
+// The job of this function is to wait for one keypress and return it.
+char editorReadKey() {
+    int nread;
+    char c;
     // Asking read() to read 1 byte from the std input into the var c
     // and will keep doing it until there aren't anymore bytes to read.
     // It returns the number of bytes that it read, and will return 0
     // when it reaches the end of the file.
-//    while (read(STDIN_FILENO, &c, 1) == 1 && c != 'q') {
+    while ((nread = read(STDIN_FILENO, &c, 1)) != 1) {
+        if (nread == -1 && errno != EAGAIN) die("read");
+    }
+    return c;
+}
+
+/*---------- Input Functions ----------*/
+// This function waits for a keypress and then handles it.
+void editorProcessKeypress() {
+    char c = editorReadKey();
+
+    switch (c) {
+        case CTRL_KEY('q'):
+            exit(0);
+            break;
+    }
+}
+
+/*---------- Header Files -----------*/
+int main() {
+    enableRawMode();
     while(1) {
-        char c = '\0';
-        if (read(STDIN_FILENO, &c, 1) == -1 && errno != EAGAIN) {
-            die("read");
-        }
-        read(STDIN_FILENO, &c, 1);
-        // iscntrl() tests whether a char is a control character.
-        // ASCII codes 0 - 31, 127 are control characters, whereas
-        // ASCII codes 32 - 126 are all printable.
-        if (iscntrl(c)) {
-            printf("%d\r\n",c);
-        }
-        else {
-            printf("%d ('%c')\r\n", c, c);
-        }
-        if (c == 'q') break;
+        editorProcessKeypress();
     }
     return 0;
 }
