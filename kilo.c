@@ -3,6 +3,7 @@
 #include <errno.h> // errno, EAGAIN
 #include <stdio.h> // printf() perror()
 #include <stdlib.h> // atexit()
+#include <sys/ioctl.h> // ioctl() TIOCGWINSZ struct winsize
 #include <termios.h> // struct termios, tcgetattr(), tcsetattr(), ECHO, TCSAFLUSH, OPOST, IXON, ICANON, ISIG, IEXTEN
 // VMIN, VTIME
 #include <unistd.h> // read() STDIN_FILENO write() STDOUT_FILENO
@@ -11,7 +12,14 @@
 #define CTRL_KEY(k) ((k) & 0x1F)
 
 /*---------- Data -----------*/
-struct termios orig_termios;
+// This struct contains the editor state
+struct editorConfig {
+    int screenrows;
+    int screencols;
+    struct termios orig_termios;
+};
+
+struct editorConfig E;
 
 /*---------- Terminal Functions -----------*/
 void die(const char *s) {
@@ -22,22 +30,22 @@ void die(const char *s) {
 }
 
 void disableRawMode() {
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1) {
+    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1) {
         die("tcsetattr");
     }
 }
 
 void enableRawMode() {
-    if(tcgetattr(STDIN_FILENO, &orig_termios) == -1) {
+    if(tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) {
         die("tcsetattr");
     }
     atexit(disableRawMode);
 
+    struct termios raw = E.orig_termios;
     // Adding BRKINT, INPCK, ISTRIP, and CS8 disables other miscellaneous
     // flags, but they are there more for the legacy of enabling 
     // "raw mode".
 
-    struct termios raw = orig_termios;
     // This disables ctrl-s and ctrl-q.
     // These are inputs for software flow control.
     // Adding ICNRL fixes ctrl-m to be correctly read in bytes.
@@ -77,6 +85,19 @@ char editorReadKey() {
     return c;
 }
 
+int getWindowSize(int *rows, int *cols) {
+    struct winsize ws;
+
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == -1 || ws.ws_col == 0) {
+        return -1;
+    }
+    else {
+        *cols = ws.ws_col;
+        *rows = ws.ws_row;
+        return 0;
+    }
+}
+
 /*---------- Input Functions ----------*/
 // This function waits for a keypress and then handles it.
 void editorProcessKeypress() {
@@ -95,7 +116,7 @@ void editorProcessKeypress() {
 // This is the function to draw "~" like defualt vim does.
 void editorDrawRows() {
     int y;
-    for (y = 0; y < 24; y++) {
+    for (y = 0; y < E.screenrows; y++) {
         write(STDOUT_FILENO, "~\r\n",3);
     }
 }
@@ -113,9 +134,15 @@ void editorRefreshScreen() {
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
-/*---------- Main Function -----------*/
+/*---------- Init Functions -----------*/
+void initEditor() {
+    if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
+}
+
 int main() {
     enableRawMode();
+    initEditor();
+
     while(1) {
         editorRefreshScreen();
         editorProcessKeypress();
