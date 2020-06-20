@@ -15,9 +15,17 @@ void enableRawMode() {
     atexit(disableRawMode);
 
     struct termios raw = orig_termios;
+    // This disables ctrl-s and ctrl-q.
+    // These are inputs for software flow control.
+    // Adding ICNRL fixes ctrl-m to be correctly read in bytes.
+    raw.c_iflag &= ~(ICRNL | IXON);
     // Adding "| ICANON" makes the program read byte by byte instead of line by line.
     // This disables the canonical mode ie get input by pressing enter mode.
-    raw.c_lflag &= ~(ECHO | ICANON);
+    // Adding ISIG local flag disables ctrl-c and ctrl-z
+    // By default: ctrl-c -> sends SIGINT to stop program
+    //             ctrl-z -> sends SIGTSTP to suspend current process
+    // Adding IEXTEN disables ctrl-v.
+    raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
 
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
