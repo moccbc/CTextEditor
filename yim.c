@@ -56,6 +56,7 @@ struct editorConfig {
     int screencols;
     int numrows;
     erow *row;
+    int dirty; // We call a text buffer dirty if it had been modified since opening or saving the file.
     char *filename;
     char statusmsg[80];
     time_t statusmsg_time;
@@ -63,6 +64,10 @@ struct editorConfig {
 };
 
 struct editorConfig E;
+
+/*---------- Function Prototypes ----------*/
+// Used in editorSave();
+void editorSetStatusMessage(const char *fmt, ...);
 
 /*---------- Terminal Functions -----------*/
 
@@ -261,6 +266,7 @@ void editorAppendRow(char *s, size_t len) {
     editorUpdateRow(&E.row[at]);
 
     E.numrows++;
+    E.dirty++;
 }
 
 // This lets inserting a single character into an erow at a given position.
@@ -271,6 +277,7 @@ void editorRowInsertChar(erow *row, int at, int c) {
     row->size++;
     row->chars[at] = c;
     editorUpdateRow(row);
+    E.dirty++;
 }
 
 /*---------- Editor Operations ----------*/
@@ -326,7 +333,11 @@ void editorOpen(char *filename) {
     }
     free(line);
     fclose(fp);
-
+    // editorOpen() calls editorAppendRow() which increments E.dirty.
+    // This turns the dirty flag on before modifying anything.
+    // The line below is here so that (modified) does not show before 
+    // making changes to the file.
+    E.dirty = 0;
 }
 
 void editorSave() {
@@ -350,12 +361,15 @@ void editorSave() {
             if (write(fd, buf, len) == len) {
                 close(fd);
                 free(buf);
+                E.dirty = 0;
+                editorSetStatusMessage("%d bytes written to disk", len);
                 return;
             }
         }
         close(fd);
     }
     free(buf);
+    editorSetStatusMessage("Can't save! I/O error: %s", strerror(errno));
 }
 
 /*---------- Append Buffer ----------*/
@@ -446,8 +460,9 @@ void editorDrawRows(struct abuf *ab) {
 void editorDrawStatusBar(struct abuf *ab) {
     abAppend(ab, "\x1b[7m", 4);
     char status[80], rstatus[80];
-    int len = snprintf(status, sizeof(status), "%.20s - %d lines",
-            E.filename ? E.filename : "[No Name]", E.numrows);
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+            E.filename ? E.filename : "[No Name]", E.numrows,
+            E.dirty ? "(modified)" : "");
     int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
             E.cy + 1, E.numrows);
     if (len > E.screencols) len = E.screencols;
@@ -634,6 +649,7 @@ void initEditor() {
     E.coloff = 0;
     E.numrows = 0;
     E.row = NULL;
+    E.dirty = 0;
     E.filename = NULL;
     E.statusmsg[0] = '\0';
     E.statusmsg_time = 0;
@@ -649,7 +665,7 @@ int main(int argc, char *argv[]) {
         editorOpen(argv[1]);
     }
 
-    editorSetStatusMessage("HELP: Ctrl-q = quit");
+    editorSetStatusMessage("HELP: Ctrrl-s = save | Ctrl-q = quit");
 
     while(1) {
         editorRefreshScreen();
