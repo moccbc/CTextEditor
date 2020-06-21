@@ -7,10 +7,10 @@ This is a command line text editor written in C created by following [this](http
 
 Some of the features I add (and to plan to add) on top of the tutorial are:
 
-    - Vim style movement keys
-    - Modal editing
-    - Copy and paste
-    - Line numbers
+- Vim style movement keys
+- Modal editing
+- Copy and paste
+- Line numbers
 
 ### Purpose
 The following are the main purposes of undertaking this project:
