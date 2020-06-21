@@ -20,7 +20,7 @@ The following are the main purposes of undertaking this project:
     - Adding features to an existing codebase
 
 ## Prerequisites
-The c compiler is needed in order to run the program. Below instructions are from Chapter 1: Setup of the tutorial.
+The c compiler and the make programis needed in order to run the program. Below instructions are from Chapter 1: Setup of the tutorial.
 
 ### Windows
 Some kind of Linux environment is needed. See the [installation guide](https://docs.microsoft.com/en-us/windows/wsl/install-win10?redirectedfrom=MSDN) in order to install Bash on Windows. Then run `sudo apt-get install gcc make` to install the C compiler and make.
@@ -29,7 +29,7 @@ Some kind of Linux environment is needed. See the [installation guide](https://d
 Open terminal and run `xcode-select --install` and click install. This will install a C compiler with make.
 
 ### Linux
-Run `sudo apt-get install gcc make` in the terminal to install the c compiler and the make program.
+Run `sudo apt-get install gcc make` in the terminal to install the C compiler and the make program.
 
 ## Installation
 Open up BASH in Windows or Linux, terminal on MacOS and run the following commands.
@@ -42,3 +42,12 @@ Run the following commands to use the program. Replace "[filename]" with an actu
 
     $ ./yim [filename]
 
+## Features
+
+### Keybindings
+    - Quitting: Ctrl-q
+    - Movement of the cursor: Arrow Keys
+    - Move the cursor to the top / bottom of screen: Page Up / Down
+    - Move the cursor to the left / right edge of screen: Home / End
+
+Additionally on some devices with the Fn key, Page Up / Down is Fn + up / down arrow and Home / End is Fn + left / right arrow key.

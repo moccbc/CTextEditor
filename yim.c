@@ -19,8 +19,8 @@
 
 /*----------- Defines ----------*/
 #define CTRL_KEY(k) ((k) & 0x1F)
-#define KILO_VERSION "0.0.1"
-#define KILO_TAB_STOP 8
+#define YIM_VERSION "0.0.1"
+#define YIM_TAB_STOP 8
 
 enum editorKey { 
     ARROW_LEFT = 1000,
@@ -214,7 +214,7 @@ int editorRowCxToRx(erow *row, int cx) {
     int j;
     for (j = 0; j < cx; j++) {
         if (row->chars[j] == '\t')
-            rx +=  (KILO_TAB_STOP - 1) - (rx % KILO_TAB_STOP);
+            rx +=  (YIM_TAB_STOP - 1) - (rx % YIM_TAB_STOP);
         rx++;
     }
 
@@ -228,13 +228,13 @@ void editorUpdateRow(erow *row) {
         if (row->chars[j] == '\t') tabs++;
 
     free(row->render);
-    row->render = malloc(row->size + tabs*(KILO_TAB_STOP - 1) + 1);
+    row->render = malloc(row->size + tabs*(YIM_TAB_STOP - 1) + 1);
 
     int idx = 0;
     for (j = 0; j < row->size; j++) {
         if (row->chars[j] == '\t') {
             row->render[idx++] = ' ';
-            while (idx % KILO_TAB_STOP != 0) row->render[idx++] = ' ';
+            while (idx % YIM_TAB_STOP != 0) row->render[idx++] = ' ';
         }
         else {
             row->render[idx++] = row->chars[j];
@@ -341,7 +341,7 @@ void editorDrawRows(struct abuf *ab) {
             if (E.numrows == 0 && y == E.screenrows / 3) {
                 // Displaying welcome message
                 char welcome[80];
-                int welcomelen = snprintf(welcome, sizeof(welcome), "Kilo editor -- version %s", KILO_VERSION);
+                int welcomelen = snprintf(welcome, sizeof(welcome), "Yim editor -- version %s", YIM_VERSION);
                 if (welcomelen > E.screencols) welcomelen = E.screencols;
                 // Centering the welcome message
                 int padding = (E.screencols - welcomelen) / 2;
