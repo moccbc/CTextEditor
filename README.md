@@ -19,19 +19,27 @@ The following are the main purposes of undertaking this project:
     - Developing usable software
     - Adding features to an existing codebase
 
-## Installation
-
-### Prerequisites
+## Prerequisites
 The c compiler is needed in order to run the program. Below instructions are from Chapter 1: Setup of the tutorial.
 
-#### Windows
+### Windows
 Some kind of Linux environment is needed. See the [installation guide](https://docs.microsoft.com/en-us/windows/wsl/install-win10?redirectedfrom=MSDN) in order to install Bash on Windows. Then run `sudo apt-get install gcc make` to install the C compiler and make.
 
-#### MacOS
+### MacOS
 Open terminal and run `xcode-select --install` and click install. This will install a C compiler with make.
 
-#### Linux
+### Linux
 Run `sudo apt-get install gcc make` in the terminal to install the c compiler and the make program.
 
+## Installation
+Open up BASH in Windows or Linux, terminal on MacOS and run the following commands.
+`
+$ git clone https://github.com/moccbc/CTextEditor.git
+$ make
+`
 
-
+## Running the program
+Run the following commands to use the program. Replace "[filename]" with an actual file you want to edit. The "[filename]" can be a non-existing filename in order to create a new file.
+`
+$ ./yim [filename]
+`
