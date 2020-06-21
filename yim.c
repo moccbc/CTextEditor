@@ -63,6 +63,7 @@ struct editorConfig {
 struct editorConfig E;
 
 /*---------- Terminal Functions -----------*/
+
 void die(const char *s) {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[H", 3);
@@ -258,6 +259,29 @@ void editorAppendRow(char *s, size_t len) {
     editorUpdateRow(&E.row[at]);
 
     E.numrows++;
+}
+
+// This lets inserting a single character into an erow at a given position.
+void editorRowInsertChar(erow *row, int at, int c) {
+    if (at < 0 || at > row->size) at = row->size;
+    row->chars = realloc(row->chars, row->size + 2);
+    memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+    row->size++;
+    row->chars[at] = c;
+    editorUpdateRow(row);
+}
+
+/*---------- Editor Operations ----------*/
+// This section will contain functions that we'll call from 
+// editorProcessKeypress() when mapping keypresses to text
+// editing operations.
+
+void editorInsertChar(int c) {
+    if (E.cy == E.numrows) {
+        editorAppendRow("", 0);
+    }
+    editorRowInsertChar(&E.row[E.cy], E.cx, c);
+    E.cx++;
 }
 
 /*---------- File I/O ----------*/
@@ -517,11 +541,17 @@ void editorProcessKeypress() {
                 while (times--)
                     editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
             }
+            break;
+
         case ARROW_UP:
         case ARROW_DOWN:
         case ARROW_LEFT:
         case ARROW_RIGHT:
             editorMoveCursor(c);
+            break;
+
+        default:
+            editorInsertChar(c);
             break;
     }
 }

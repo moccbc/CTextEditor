@@ -5,12 +5,12 @@
 ### What is it?
 This is a command line text editor written in C created by following [this](https://viewsourcecode.org/snaptoken/kilo/) tutorial.
 
-Some of the features I add (and to plan to add) on top of the tutorial are:
+The features I added (and to plan to add) on top of the tutorial are:
 
-- Vim style movement keys
-- Modal editing
-- Copy and paste
-- Line numbers
+- Vim style movement keys (Not Started)
+- Modal editing (Not Started)
+- Copy and paste (Not Started)
+- Line numbers (Not Started)
 
 ### Purpose
 The following are the main purposes of undertaking this project:
