@@ -36,6 +36,7 @@ Open up BASH in Windows or Linux, terminal on MacOS and run the following comman
 
 `
 $ git clone https://github.com/moccbc/CTextEditor.git
+
 $ make
 `
 
