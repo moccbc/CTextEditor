@@ -3,14 +3,7 @@
 ## Introduction
 
 ### What is it?
-This is a command line text editor written in C created by following [this](https://viewsourcecode.org/snaptoken/kilo/) tutorial.
-
-The features I added (and to plan to add) on top of the tutorial are:
-
-- Vim style movement keys (Not Started)
-- Modal editing (Not Started)
-- Copy and paste (Not Started)
-- Line numbers (Not Started)
+This is a text editor in the command line. The program is written in C made by following [this](https://viewsourcecode.org/snaptoken/kilo/) tutorial. The Features section explains which features I implemented following the tutorial, and which features I implemented on my own.
 
 ### Purpose
 The following are the main purposes of undertaking this project:
@@ -43,11 +36,20 @@ Run the following commands to use the program. Replace "[filename]" with an actu
     $ ./yim [filename]
 
 ## Features
+Below are the features that are implemented into the text editor. The "Tutorial" section covers what I implemented based on following the tutorial. The "On my own" section covers what I implemented, well, on my own.
 
-### Keybindings
-- Quitting: Ctrl-q
-- Movement of the cursor: Arrow Keys
-- Move the cursor to the top / bottom of screen: Page Up / Down
-- Move the cursor to the left / right edge of screen: Home / End
+### Tutorial
+- Movement of the cursor
+- Exiting the file
+- Viewing the file
+- Editing the file
+- Creating a new file (./yim [newfileName])
+- Saving the file
 
-Additionally on some devices with the Fn key, Page Up / Down is Fn + up / down arrow and Home / End is Fn + left / right arrow key.
+### On my own
+- Searching (Not started)
+  * This is covered in the tutorial, but I decided to try and implement this on my own.
+- Vim style movement keys (Not Started)
+- Modal editing (Not Started)
+- Copy and paste (Not Started)
+- Line numbers (Not Started)
