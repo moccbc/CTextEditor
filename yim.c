@@ -341,11 +341,20 @@ void editorSave() {
     // 0644 is the permission code. This gives the owner of the file permission to 
     // read and write the file.
     int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
-    // Sets the file's size to the specified length. If it is shorter, this will add 
-    // 0 bytes at the end to make it that length.
-    ftruncate(fd, len);
-    write(fd, buf, len);
-    close(fd);
+    // Ensuring that whether or not an error occured the file is closed
+    // and the memory that buf points to is freed
+    if (fd != -1) {
+        // Sets the file's size to the specified length. If it is shorter, this will add 
+        // 0 bytes at the end to make it that length.
+        if (ftruncate(fd, len) != -1) {
+            if (write(fd, buf, len) == len) {
+                close(fd);
+                free(buf);
+                return;
+            }
+        }
+        close(fd);
+    }
     free(buf);
 }
 
