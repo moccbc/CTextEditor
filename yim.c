@@ -22,6 +22,7 @@
 #define CTRL_KEY(k) ((k) & 0x1F)
 #define YIM_VERSION "0.0.1"
 #define YIM_TAB_STOP 8
+#define YIM_QUIT_TIMES 3
 
 enum editorKey { 
     BACKSPACE = 127,
@@ -280,6 +281,14 @@ void editorRowInsertChar(erow *row, int at, int c) {
     E.dirty++;
 }
 
+void editorRowDelChar(erow *row, int at) {
+    if (at < 0 || at >= row->size) return;
+    memmove(&row->chars[at], &row->chars[at+1], row->size - at);
+    row->size--;
+    editorUpdateRow(row);
+    E.dirty++;
+}
+
 /*---------- Editor Operations ----------*/
 // This section will contain functions that we'll call from 
 // editorProcessKeypress() when mapping keypresses to text
@@ -291,6 +300,16 @@ void editorInsertChar(int c) {
     }
     editorRowInsertChar(&E.row[E.cy], E.cx, c);
     E.cx++;
+}
+
+void editorDelChar() {
+    if (E.cy == E.numrows) return;
+
+    erow *row = &E.row[E.cy];
+    if (E.cx > 0) {
+        editorRowDelChar(row, E.cx - 1);
+        E.cx--;
+    }
 }
 
 /*---------- File I/O ----------*/
@@ -398,7 +417,6 @@ void abAppend(struct abuf *ab, const char *s, int len) {
 void abFree(struct abuf *ab) {
     free(ab->b);
 }
-
 
 /*---------- Output Functions -----------*/
 void editorScroll() {
@@ -576,6 +594,8 @@ void editorMoveCursor(int key) {
 
 // This function waits for a keypress and then handles it.
 void editorProcessKeypress() {
+    static int quit_times = YIM_QUIT_TIMES;
+
     int c = editorReadKey();
 
     switch (c) {
@@ -583,6 +603,12 @@ void editorProcessKeypress() {
             break;
 
         case CTRL_KEY('q'):
+            if (E.dirty && quit_times > 0) {
+                editorSetStatusMessage("WARNING!!! File has unsaved changes. "
+                        "Press Ctrl-q %d more times to quit.", quit_times);
+                quit_times--;
+                return;
+            }
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
@@ -604,6 +630,10 @@ void editorProcessKeypress() {
         case BACKSPACE:
         case CTRL_KEY('h'):
         case DEL_KEY:
+            // Pressing the DEL_KEY is equivalent to moving the cursor to the right
+            // then deleting the key.
+            if (c == DEL_KEY) editorMoveCursor(ARROW_RIGHT);
+            editorDelChar();
             break;
 
         case PAGE_UP:
@@ -638,6 +668,8 @@ void editorProcessKeypress() {
             editorInsertChar(c);
             break;
     }
+
+    quit_times = YIM_QUIT_TIMES;
 }
 
 /*---------- Init Functions -----------*/
