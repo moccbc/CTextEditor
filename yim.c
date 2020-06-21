@@ -6,6 +6,7 @@
 /*---------- Header Files -----------*/
 #include <ctype.h> // iscntrl()
 #include <errno.h> // errno, EAGAIN
+#include <fcntl.h>
 #include <stdio.h> // printf() perror()
 #include <stdarg.h>
 #include <stdlib.h> // atexit() realloc() free()
@@ -286,6 +287,26 @@ void editorInsertChar(int c) {
 }
 
 /*---------- File I/O ----------*/
+
+char *editorRowsToString(int *buflen) {
+    int totlen = 0;
+    int j;
+    for (j = 0; j < E.numrows; j++) 
+        totlen += E.row[j].size + 1;
+    *buflen = totlen;
+
+    char *buf = malloc(totlen);
+    char *p = buf;
+    for (j = 0; j < E.numrows; j++) {
+        memcpy(p, E.row[j].chars, E.row[j].size);
+        p += E.row[j].size;
+        *p = '\n';
+        p++;
+    }
+
+    return buf;
+}
+
 // For opening and reading a file from disk.
 void editorOpen(char *filename) {
     free(E.filename);
@@ -306,6 +327,26 @@ void editorOpen(char *filename) {
     free(line);
     fclose(fp);
 
+}
+
+void editorSave() {
+    // If the file name is not given.
+    if (E.filename == NULL) return;
+
+    int len;
+    char* buf = editorRowsToString(&len);
+
+    // O_CREAT -> tells open() to create a new file if it doesn't exist.
+    // O_RDWR -> tells open() we want to open it for reading and writing.
+    // 0644 is the permission code. This gives the owner of the file permission to 
+    // read and write the file.
+    int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+    // Sets the file's size to the specified length. If it is shorter, this will add 
+    // 0 bytes at the end to make it that length.
+    ftruncate(fd, len);
+    write(fd, buf, len);
+    close(fd);
+    free(buf);
 }
 
 /*---------- Append Buffer ----------*/
@@ -522,9 +563,15 @@ void editorProcessKeypress() {
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
             break;
+
+        case CTRL_KEY('s'):
+            editorSave();
+            break;
+
         case HOME_KEY:
             E.cx = 0;
             break;
+
         case END_KEY:
             if (E.cy < E.numrows)
                 E.cx = E.row[E.cy].size;
