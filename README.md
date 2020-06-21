@@ -38,7 +38,7 @@ Open up BASH in Windows or Linux, terminal on MacOS and run the following comman
     $ make
 
 ## Running the program
-Run the following commands to use the program. Replace "[filename]" with an actual file you want to edit. The "[filename]" can be a non-existing filename in order to create a new file.
+Run the following commands to use the program. Replace "[filename]" with an actual file you want to edit. The "[filename]" can be a non-existing file. This will create a new file.
 
     $ ./yim [filename]
 
