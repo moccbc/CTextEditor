@@ -15,9 +15,9 @@ Some of the features I add (and to plan to add) on top of the tutorial are:
 ### Purpose
 The following are the main purposes of undertaking this project:
 
-    - Grasp an understanding of how Vim works under the hood
-    - Developing usable software
-    - Adding features to an existing codebase
+- Grasp an understanding of how Vim works under the hood
+- Developing usable software
+- Adding features to an existing codebase
 
 ## Prerequisites
 The c compiler and the make programis needed in order to run the program. Below instructions are from Chapter 1: Setup of the tutorial.
@@ -45,9 +45,9 @@ Run the following commands to use the program. Replace "[filename]" with an actu
 ## Features
 
 ### Keybindings
-    - Quitting: Ctrl-q
-    - Movement of the cursor: Arrow Keys
-    - Move the cursor to the top / bottom of screen: Page Up / Down
-    - Move the cursor to the left / right edge of screen: Home / End
+- Quitting: Ctrl-q
+- Movement of the cursor: Arrow Keys
+- Move the cursor to the top / bottom of screen: Page Up / Down
+- Move the cursor to the left / right edge of screen: Home / End
 
 Additionally on some devices with the Fn key, Page Up / Down is Fn + up / down arrow and Home / End is Fn + left / right arrow key.
