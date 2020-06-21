@@ -21,10 +21,13 @@ The following are the main purposes of undertaking this project:
 
 ### Prerequisites
 The c compiler is needed in order to run the program. Below instructions are from Chapter 1: Setup of the tutorial.
+
     - Windows
       Some kind of Linux environment is needed. See the [installation guide](https://docs.microsoft.com/en-us/windows/wsl/install-win10?redirectedfrom=MSDN) in order to install Bash on Windows. Then run 'sudo apt-get install gcc make' to install the C compiler and make.
+
     - MacOS
       Open terminal and run 'xcode-select --install' and click install. This will install a C compiler with make.
+
     - Linux
       Run 'sudo apt-get install gcc make' in the terminal to install the c compiler and the make program.
 
