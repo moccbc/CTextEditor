@@ -34,15 +34,11 @@ Run `sudo apt-get install gcc make` in the terminal to install the c compiler an
 ## Installation
 Open up BASH in Windows or Linux, terminal on MacOS and run the following commands.
 
-`
-$ git clone https://github.com/moccbc/CTextEditor.git
-
-$ make
-`
+    $ git clone https://github.com/moccbc/CTextEditor.git
+    $ make
 
 ## Running the program
 Run the following commands to use the program. Replace "[filename]" with an actual file you want to edit. The "[filename]" can be a non-existing filename in order to create a new file.
 
-`
-$ ./yim [filename]
-`
+    $ ./yim [filename]
+
